@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import asyncio
 from ingestion.producer import produce_comments
-from extraction.ner import extract_event
+from agent.graph import app
 
 
 async def consume(queue: asyncio.Queue) -> None:
@@ -14,12 +14,12 @@ async def consume(queue: asyncio.Queue) -> None:
         if comment is None:
             break
 
-        event = await extract_event(comment, sequence)
+        result = await app.ainvoke({
+            "comment": comment,
+            "sequence": sequence
+        })
 
-        if event:
-            print("[CONSUMER] →", event.model_dump())
-        else:
-            print("[CONSUMER] → event ignoré")
+        print("[CONSUMER] →", result)
 
         sequence += 1
 

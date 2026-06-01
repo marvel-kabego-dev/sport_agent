@@ -32,13 +32,16 @@ async def read_state_node(state: dict) -> Dict:
 async def validate_node(state: dict) -> Dict:
     print("\n--- [Nœud] 3. Validate ---")
     event = state["event"]
-    current_score = state["current_score"]
-    
+    current_score = state.get("current_score")
+
+    if event is None:
+        return {"validation_passed": False, "error": "Extraction échouée — aucun événement."}
+
     score_ok = verify_score_consistency.invoke({
         "home_score": event.home_score or 0,
         "away_score": event.away_score or 0
     })
-    
+
     if score_ok:
         return {"validation_passed": True, "error": ""}
     else:
@@ -50,7 +53,7 @@ async def save_node(state: dict) -> Dict:
     # Lit : state["event"]
     event = state["event"]
 
-    save_match_event.invoke({"event": event})
+    save_match_event.invoke({"event": event.model_dump() if event is not None else None})
     
     return {"error": None}
 
